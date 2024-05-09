@@ -1,6 +1,6 @@
 package hello.core.member;
 
-// 회원 도메인 요구사항 - 회원은 VIP와 일반 등급이 있다. 조건 충족
+// 회원 등급 - BASIC, VIP
 public enum Grade {
     BASIC,
     VIP
