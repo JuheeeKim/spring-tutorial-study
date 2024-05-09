@@ -21,6 +21,7 @@ public class AppConfig {
         return new MemoryMemberRepository();
     }
 
+    // 구현체에 직접적으로 의존하지 않고 인터페이스에 의존하도록하여 'DIP 의존관계 원칙'을 따름
     public OrderService orderService(){
         return new OrderServiceImpl(memberRepository(), discountPolicy());
     }
