@@ -7,6 +7,7 @@ import hello.core.member.MemberServiceImpl;
 
 public class MemberApp {
 
+    // MemberService를 활용해 member가 잘 등록되는지 확인
     public static void main(String[] args) {
         MemberService memberService = new MemberServiceImpl();
         Member member = new Member(1L, "memberA", Grade.VIP);
