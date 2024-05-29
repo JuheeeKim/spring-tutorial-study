@@ -89,11 +89,13 @@ private final DiscountPolicy discountPolicy = new RateDiscountPolicy();
 private DiscountPolicy discountPolicy;
 ```
 
-하지만 이 상태로 실행하면 오류가 발생한다.
+하지만 이 상태로 실행하면 오류가 발생한다.</br>
+</br> 
 
-</br>
+#### 📖관심사의 분리 </br>
+위 오류를 해결하려면 누군가가 클라이언트인 `OrderServiceImpl`에 `DiscountPolicy`의 구현 객체를 대신 생성하고 주입해주어야 한다. </br> 
 
-
+</br> 
 
 ### 📒섹션4 스프링 컨테이너와 스프링 빈</br>
 
