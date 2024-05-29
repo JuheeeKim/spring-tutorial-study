@@ -1,6 +1,6 @@
-### Spring tutorial study
+## Spring tutorial study
 
-#### 색션1 </br>
+### 색션1 </br>
 
 #### 섹션2
 
