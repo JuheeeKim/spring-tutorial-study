@@ -115,6 +115,46 @@ public class AppConfig {
 }
 ```
 
+<img src="https://github.com/JuheeeKim/spring-tutorial-study/assets/123529128/04f82b30-7bda-4451-b18a-f0f24aab67a0.png"  width="500" height="330"/> </br>
+* 객체의 생성과 연결은 AppConfig가 담당한다. </br> 
+* **DIP 완성**: 객체 클래스는 추상(인터페이스)에만 의존하면 된다. </br> 
+* 관심사의 분리: 객체를 생성하고 연결하는 역할과 실행하는 역할이 명확히 분리되었다. </br> 
+</br> 
+
+#### 📖AppConfig 리팩터링 </br>
+```java
+public class AppConfig {
+
+    // MemberService -> memberRepository()
+    public MemberService memberService() {
+         return new MemberServiceImpl(memberRepository());
+    }
+
+    // OrderService -> memberRepository(), discountPolicy()
+    public OrderService orderService() {
+         return new OrderServiceImpl(
+            memberRepository(),
+            discountPolicy());
+    }
+
+    // memberRepository()
+    public MemberRepository memberRepository() {
+         return new MemoryMemberRepository();
+    }
+
+    // discountPolicy()
+    public DiscountPolicy discountPolicy() {
+         return new FixDiscountPolicy();
+    }
+}
+```
+* `new MemoryMemberRepository()` 부분 중복이 제거되었다. MemoryMemberRepository를 다른 구현체로 변경할 때 한 부분만 변경하면 된다. </br> 
+* 리턴 타입을 통해 역할과 구현 클래스를 한 눈에 파악 가능하다. </br> 
+</br> 
+
+#### 📖새로운 구조와 할인 정책 적용 </br>
+
+
 </br> 
 
 ### 📒섹션4 스프링 컨테이너와 스프링 빈</br>
