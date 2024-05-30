@@ -187,6 +187,7 @@ public class AppConfig {
 <img src="https://github.com/JuheeeKim/spring-tutorial-study/assets/123529128/9203164a-375a-43bf-b22a-d3ad42427e08.png"  width="500" height="170"/> </br>
 
 애플리케이션 실행 시점(런타임)에 외부에서 실제 구현 객체를 생성하고 클라이언트에 전달해서 클라이언트와 서버의 실제 의존관계가 연결되는 것을 **의존관계 주입**이라 한다. </br>
+의존관계 주입을 사용하면 정적인 클래스 의존관계를 변경하지 않고, 동적인 객체 인스턴스 의존관계를 쉽게 변경할 수 있다. </br>
 
 
 </br> 
