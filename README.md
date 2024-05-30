@@ -94,6 +94,26 @@ private DiscountPolicy discountPolicy;
 
 #### 📖관심사의 분리 </br>
 위 오류를 해결하려면 누군가가 구현 객체를 대신 생성하고 주입해주어야 한다. </br> 
+ 
+**AppConfig의 등장과 생성자 주입** </br>
+* 애플리케이션의 전체 동작 방식을 구성(Config)하기 위해 `구현 객체를 생성`하고, `연결`하는 책임을 가지는 별도의 설정 클래스를 만든다. </br>
+* AppConfig는 생성한 객체 인스턴스의 참조(래퍼런스)를 `생성자를 통해 주입(연결)`해준다. </br>
+  - `MemberServiceImpl` -> `MemoryMemberRepository` </br>
+  - `OrderServiceImpl`  -> `MemoryMemberRepository`, `FixDiscountPolicy` </br>
+
+```java
+public class AppConfig {
+    public MemberService memberService() {
+       return new MemberServiceImpl(new MemoryMemberRepository());
+    }
+
+   public OrderService orderService() {
+       return new OrderServiceImpl(
+              new MemoryMemberRepository(),
+              new FixDiscountPolicy());
+    }
+}
+```
 
 </br> 
 
