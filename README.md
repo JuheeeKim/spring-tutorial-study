@@ -176,9 +176,13 @@ public class AppConfig {
 
 **의존관계 주입 DI** </br>
 * 의존관계는 정적인 클래스 의존관계와 실행 시점에 결정되는 동적인 객체(인스턴스) 의존관계를 분리해서 생각해야 한다. </br>
-* 정적인 의존관계: 애플리케이션을 실행하지 않아도 분석할 수 있다.
+
+정적인 의존관계: 애플리케이션을 실행하지 않아도 분석할 수 있다.
+<img src="https://github.com/JuheeeKim/spring-tutorial-study/assets/123529128/5c459b33-0928-41fa-8407-e3bb78f5896b.png"  width="500" height="330"/> </br>
+</br>
   
-* 동적인 의존관계: 애플리케이션 실행 시점에 실제 생성된 객체 인스턴스의 참조가 연결된다.
+동적인 의존관계: 애플리케이션 실행 시점에 실제 생성된 객체 인스턴스의 참조가 연결된다.
+<img src="https://github.com/JuheeeKim/spring-tutorial-study/assets/123529128/5c459b33-0928-41fa-8407-e3bb78f5896b.png"  width="500" height="330"/> </br>
 
 
 </br> 
