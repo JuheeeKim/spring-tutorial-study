@@ -298,9 +298,22 @@ ac.getBeansOfType(Object.class);
 </br>
 
 #### 📖BeanFactory와 ApplicationContext </br>
+<img src="https://github.com/JuheeeKim/spring-tutorial-study/assets/123529128/f69bbff6-b254-4a6f-9cb2-5d08b871a93f.png"  width="200" height="300"/> </br>
+* ApplicationContext는 BeanFactory의 기능을 상속받아, 빈 관리 기능 + 부가 기능을 제공한다. </br>
+* BeanFactory를 직접 사용할 일은 거의 없다. 부가기능이 포함된 ApplicationContext를 사용한다. </br>
+* BeanFactory나 ApplicationContext를 스프링 컨테이너라 한다. </br>
+</br>
 
+#### 📖다양한 설정 형식 지원 - 자바 코드, XML </br>
+```java
+ApplicationContext ac =
+            new GenericXmlApplicationContext("appConfig.xml");
+```
+스프링 컨테이너는 다양한 형식의 설정 정보를 받아들일 수 있게 유연하게 설계되어있다. (자바 코드, XML 등등) </br>
+</br>
 
 ### 📒섹션5 싱글톤 컨테이너</br>
+
 
 ### 📒섹션6 컴포넌트 스캔</br>
 
