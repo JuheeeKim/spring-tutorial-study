@@ -312,8 +312,59 @@ ApplicationContext ac =
 스프링 컨테이너는 다양한 형식의 설정 정보를 받아들일 수 있게 유연하게 설계되어있다. (자바 코드, XML 등등) </br>
 </br>
 
-### 📒섹션5 싱글톤 컨테이너</br>
+#### 📖ApplicationContext Vs AnnotationConfigApplicationContext </br>
+* ApplicationContext는 AnnotationConfigApplicationContext의 **상위 interface**이다. </br>
+* 그래서 ApplicationContext는 기능이 적고, AnnotationConfigApplicationContext는 비교적 많은 기능이 있다. </br>
+* 실제 스프링 애플리케이션을 개발할 때에는 **ApplicationContext**를 사용한다. </br>
+</br>
 
+### 📒섹션5 싱글톤 컨테이너</br>
+#### 📖웹 애플리케이션과 싱글톤 </br>
+```java
+//스프링이 없는 순수한 DI 컨테이너 테스트
+AppConfig appConfig = new AppConfig();
+
+//1. 조회: 호출할 때마다 객체 생성
+//2. 조회: 호출할 때마다 객체 생성
+
+//참조값이 다른 것을 확인
+```
+* 스프링 없는 순수한 DI 컨테이너인 AppConfig는 요청을 할 때마다 객체를 새로 생성한다. </br>
+* 해결방안은 해당 객체가 딱 1개만 생성되고, 공유하도록 설계하면 된다. -> **싱글톤 패턴** </br>
+</br>
+
+#### 📖싱글톤 패턴 </br>
+객체가 1개만 생성되도록 하기 위해, **private**을 사용하는 싱글톤 패턴을 만든다. </br>
+```java
+public class SingletonService {
+   //static 영역 -> 딱 하나만 존재하게 됨
+   private static final SingletonService instance = new SingletonService();
+
+   //getInstance 메소드를 통해 한번만 생성된 객체를 가져옴
+   public static SingletonService getInstance() {
+       return instance;
+   }
+
+   //생성자를 private으로 선언해서 외부에서 new 키워드를 사용한 객체 생성을 못하게 막음
+   private SingletonService() {
+
+   }
+}
+```
+* 인스턴스를 딱 하나 생성하고, Test를 만들어 실행하면 참조값이 같아 호출할 때마다 같은 인스턴스를 반환하는 것을 확인할 수 있다. </br>
+* 이러한 싱글톤 패턴은 많은 문제점을 가지고 있다. 해당 문제점을 스프링을 활용한 싱글톤 컨테이너로 해결할 수 있다. </br>
+</br>
+
+#### 📖싱글톤 컨테이너 </br>
+```java
+ApplicationContext ac =
+            new AnnotationConfigApplicationContext(AppConfig.class);
+
+//1. 조회: 호출할 때마다 같은 객체 반환 (`ac.getBean()` 사용)
+//2. 조회: 호출할 때마다 같은 객체 반환 (`ac.getBean()` 사용)
+
+//참조값이 다른 것을 확인
+```
 
 ### 📒섹션6 컴포넌트 스캔</br>
 
