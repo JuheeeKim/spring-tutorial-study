@@ -210,16 +210,18 @@ ApplicationContext ac =
 **스프링 컨테이너 생성 과정** </br>
 </br>
 <img src="https://github.com/JuheeeKim/spring-tutorial-study/assets/123529128/28f00671-732e-478d-8793-2171cbeb52a7.png"  width="550" height="250"/> </br>
+<img src="https://github.com/JuheeeKim/spring-tutorial-study/assets/123529128/46d72436-4714-49bc-adb6-8d801418d89b.png"  width="550" height="250"/> </br>
 1. 스프링 컨테이너 생성 </br>
 * `AppConfig.class`를 구성 정보로 지정한다. </br>
 * AppConfig 클래스에 설정을 구성한다는 뜻의 `@Configuration`을 붙여준다. </br>
 2. 스프링 빈 등록 </br>
 * `@Bean`, 빈 이름은 보통 메서드 이름을 사용한다. </br>
-* 스프링 컨테이너에 메서드를 호출해서 반환된 객체를 스프링 빈으로 등록한다.
+* 스프링 컨테이너에 메서드를 호출해서 반환된 객체를 스프링 빈으로 등록한다. </br>
 3. 스프링 빈 의존관계 설정 </br>
-* 스프링 컨테이너는 설정 정보를 참고해서 의존관계를 주입(DI) </br>
+* 스프링 컨테이너는 설정 정보를 참고해서 의존관계를 주입(DI)한다. </br>
+</br>
 
-
+#### 📖컨테이너에 등록된 모든 빈 조회 </br>
 
 
 ### 📒섹션5 싱글톤 컨테이너</br>
