@@ -365,6 +365,97 @@ ApplicationContext ac =
 
 //참조값이 다른 것을 확인
 ```
+<img src="https://github.com/JuheeeKim/spring-tutorial-study/assets/123529128/75e6aa1d-fcf5-4111-b040-cacfa7f9f914"  width="500" height="300"/> </br>
+**스프링 컨테이너** 덕분에 고객의 요청이 올 때마다 객체를 생성하는 것이 아니라, 이미 만들어진 객체를 **효율적으로** 재사용할 수 있다. </br>
+</br>
+
+#### 📖싱글톤 방식의 주의점 </br>
+* 객체 인스턴스를 하나만 생성해서 공유하는 방식은 여러 클라이언트가 하나의 같은 객체 인스턴스를 공유하기 때문에 싱글톤 객체는 상태를 **무상태(stateless)** 로 설계해야 한다. </br>
+* 무상태(stateless)란 변경할 수 있는 상태가 아닌, 가급적 읽기만 가능한 상태를 말한다. </br>
+* 스프링 빈의 필드에 공유 값을 설정하면 정말 큰 장애 발생 위험이 있다!! </br>
+</br>
+
+#### 📖@Configuration과 싱글톤 </br>
+```java
+@Configuration
+public class AppConfig {
+
+    @Bean
+    public MemberService memberService() {
+        return new MemberServiceImpl(memberRepository());
+    }
+
+    @Bean
+    public OrderService orderService() {
+        return new OrderServiceImpl(memberRepository(), discountPolicy());
+    }
+
+    @Bean
+    public MemberRepository memberRepository() {
+        return new MemoryMemberRepository();
+    }
+    
+	...
+}
+```
+* memberService와 orderService빈 동일하게 `memberRepository()`를 호출한다. </br>
+* 결과적으로 각각 다른 2개의 `MemoryMemberRepository`가 생성되면서 싱글톤이 깨지는 것처럼 보여 테스트를 진행한다. </br>
+</br>
+
+```java
+public class ConfigurationSingletonTest {
+    @Test
+    void configurationTest() {
+        ApplicationContext ac = new AnnotationConfigApplicationContext(AppConfig.class);
+        
+		...
+
+        // 같은 인스턴스가 조회된다.
+        System.out.println("memberService -> memberRepository1 = " + memberRepository1);
+        System.out.println("orderService -> memberRepository2 = " + memberRepository2);
+        System.out.println("memberRepository = " + memberRepository);
+
+    }
+}
+```
+하지만 테스트 코드를 진행해보면, 같은 인스턴스가 조회되는 것을 알 수 있다. </br>
+</br>
+
+#### 📖@Configuration과 바이트코드 조작의 마법 </br>
+스프링 컨테이너는 스프링 빈이 싱글톤이 되도록 보장해주어야 한다. </br>
+```java
+@Test
+void configurationDeep() {
+	...
+
+	AppConfig bean = ac.getBean(AppConfig.class);
+        
+	// bean = class hello.core.AppConfig$$EnhancerBySpringCGLIB$$d7ded4e7 출력
+	System.out.println("bean = " + bean.getClass());
+}
+```
+* AppConfig class를 출력해보면 우리가 만든 AppConfig가 아닌 CGLIB이라는 다른 클래스가 나오는 것을 확인할 수 있다. </br>
+</br>
+
+**CGLIB 예상 코드**
+```java
+ @Bean
+ public MemberRepository memberRepository() {
+       if (memoryMemberRepository가 이미 스프링 컨테이너에 등록되어 있으면?) {
+             return 스프링 컨테이너에서 찾아서 반환;
+       } else { //스프링 컨테이너에 없으면
+            기존 로직을 호출해서 MemoryMemberRepository를 생성하고 스프링 컨테이너에 등록
+            return 반환
+      }
+}
+```
+* CGLIB 라는 조작된 클래스가 싱글톤을 보장해준다. </br>
+</br>
+
+@Bean만 사용해도 스프링 빈으로 등록되지만, @Configuration을 적용하지 않으면 싱글톤이 보장되지 않는다. </br>
+따라서, 스프링 설정 정보는 항상 `@Configuration`을 사용하도록 한다. </br>
+</br>
+
 
 ### 📒섹션6 컴포넌트 스캔</br>
 
