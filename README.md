@@ -191,11 +191,6 @@ public class AppConfig {
 * IoC 컨테이너, DI 컨테이너라 한다. </br>
 </br>
 
-#### 📖스프링으로 전환하기 </br>
-* AppConfig 클래스에 설정을 구성한다는 뜻의 `@Configuration`을 붙여준다. </br>
-* 각 메서드에 `@Bean`을 붙여준다. 스프링 컨테이너에 메서드를 호출해서 반환된 객체를 스프링 빈으로 등록한다. </br>
-</br>
-
 ### 📒섹션4 스프링 컨테이너와 스프링 빈</br>
 #### 📖스프링 컨테이너 생성 </br>
 ```java
@@ -222,6 +217,87 @@ ApplicationContext ac =
 </br>
 
 #### 📖컨테이너에 등록된 모든 빈 조회 </br>
+```java
+//스프링 컨테이너 생성
+AnnotationConfigApplicationContext ac =
+            new AnnotationConfigApplicationContext(AppConfig.class);
+
+// 스프링에 등록된 모든 빈 이름을 조회
+ac.getBeanDefinitionNames();
+
+ // "..." 이름을 가진 빈 객체(인스턴스)를 조회
+ac.getBean(...);
+
+// 직접 등록한 애플리케이션 빈
+ROLE_APPLICATION
+// 스프링이 내부에서 사용하는 빈
+ROLE_INFRASTRUCTURE
+```
+</br>
+
+#### 📖스프링 빈 조회 - 기본 </br>
+```java
+//스프링 컨테이너 생성
+AnnotationConfigApplicationContext ac =
+            new AnnotationConfigApplicationContext(AppConfig.class);
+
+// bean 이름으로 조회
+ac.getBean("memberService", MemberService.class);
+
+// 이름없이 type으로만 조회
+ac.getBean(MemberService.class);
+
+// 구체 type으로 조회
+ac.getBean("memberService",MemberServiceImpl.class);
+
+// 없는 이름 조회하면 오류 발생
+NoSuchBeanDefinitionException
+```
+</br>
+
+#### 📖스프링 빈 조회 - 동일한 타입이 둘 이상 </br>
+```java
+//스프링 컨테이너 생성
+AnnotationConfigApplicationContext ac =
+            new AnnotationConfigApplicationContext(SameBeanConfig.class);
+
+//타입으로 조회시 같은 타입이 둘 이상이면, 중복 오류 발생
+NoUniqueBeanDefinitionException
+
+//타입으로 조회시 같은 타입이 둘 이상이면, 빈 이름 지정
+ac.getBean("memberRepository1", MemberRepository.class);
+
+//특정 타입을 모두 조회
+ac.getBeansOfType(MemberRepository.class);
+```
+</br>
+
+#### 📖스프링 빈 조회 - 상속관계 </br>
+* 부모 타입으로 조회하면, 자식 타입도 함께 조회한다. </br>
+* 그래서 모든 자바 객체의 최고 부모인 `Object` 타입으로 조회하면, 모든 스프링 빈을 조회한다. </br>
+```java
+//스프링 컨테이너 생성
+AnnotationConfigApplicationContext ac =
+            new AnnotationConfigApplicationContext(TestConfig.class);
+
+//부모 타입으로 조회시, 자식 둘 이상이면 중복 오류 발생
+NoUniqueBeanDefinitionException
+
+//부모 타입으로 조회시, 자식 둘 이상이면 빈 이름 지정
+ac.getBean("rateDiscountPolicy", DiscountPolicy.class);
+
+//특정 하위 타입으로 조회
+ac.getBean(RateDiscountPolicy.class);
+
+//부모 타입으로 모두 조회
+ac.getBeansOfType(DiscountPolicy.class);
+
+//부모 타입으로 모두 조회 - Object
+ac.getBeansOfType(Object.class);
+```
+</br>
+
+#### 📖BeanFactory와 ApplicationContext </br>
 
 
 ### 📒섹션5 싱글톤 컨테이너</br>
