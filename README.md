@@ -36,8 +36,8 @@ Java 21, InteliJ를 사용했다. </br>
    - 할인 정책은 모든 VIP는 1000원을 할인해주는 고정 금액 할인을 적용한다. </br>
 
 #### 📖회원 도메인 설계 </br>
-<img src="https://github.com/JuheeeKim/spring-tutorial-study/assets/123529128/fd0ee40d-bff0-4730-88f8-acc31d7e8522.png"  width="600" height="200"/> </br>
-<img src="https://github.com/JuheeeKim/spring-tutorial-study/assets/123529128/99675ec2-0e80-47ea-8b92-b5f1777e0425.png"  width="600" height="210"/> </br>
+<img src="https://github.com/JuheeeKim/spring-tutorial-study/assets/123529128/fd0ee40d-bff0-4730-88f8-acc31d7e8522.png"  width="580" height="180"/> </br>
+<img src="https://github.com/JuheeeKim/spring-tutorial-study/assets/123529128/99675ec2-0e80-47ea-8b92-b5f1777e0425.png"  width="580" height="190"/> </br>
 
 #### 📖회원 도메인 개발 </br>
 회원 등급, 회원 엔티티, 회원 저장소 인터페이스, 메모리 회원 저장소 구현체, 회원 서비스 인터페이스, 회원 서비스 구현체를 만든다. </br>
@@ -54,10 +54,10 @@ Test 코드를 작성해 실행하면 아래 사진처럼 정상적으로 작동
 </br>
 
 **주문 도메인 협력, 역할, 책임**</br>
-<img src="https://github.com/JuheeeKim/spring-tutorial-study/assets/123529128/53adee49-639c-490e-832c-46eb6de59a29"  width="600" height="350"/> </br>
+<img src="https://github.com/JuheeeKim/spring-tutorial-study/assets/123529128/53adee49-639c-490e-832c-46eb6de59a29"  width="570" height="370"/> </br>
 
 #### 📖주문과 할인 도메인 개발 </br>
-할인 정책 인터페이스, 정액 할인 정책 구현체, 주문 엔티티, 주문 서비스 인터페이스, 주문 서비스 구현체를 만든다.
+할인 정책 인터페이스, 정액 할인 정책 구현체, 주문 엔티티, 주문 서비스 인터페이스, 주문 서비스 구현체를 만든다. </br>
 
 #### 📖주문과 할인 도메인 실행과 테스트 </br>
 Test 코드를 작성해 실행하면 정상적으로 작동하는 것을 알 수 있다. </br>
@@ -68,6 +68,7 @@ Test 코드를 작성해 실행하면 정상적으로 작동하는 것을 알 �
 #### 📖새로운 할인 정책 개발 </br>
 주문한 금액의 %를 할인해주는 새로운 정률 할인 정책을 추가한다. </br>
 <img src="https://github.com/JuheeeKim/spring-tutorial-study/assets/123529128/0a944688-1200-4be2-af83-e931487162ac.png"  width="500" height="200"/> </br>
+</br>
 
 #### 📖새로운 할인 정책 적용과 문제점 </br>
 ```java
