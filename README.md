@@ -43,9 +43,7 @@ Java 21, InteliJ를 사용했다. </br>
 회원 등급, 회원 엔티티, 회원 저장소 인터페이스, 메모리 회원 저장소 구현체, 회원 서비스 인터페이스, 회원 서비스 구현체를 만든다. </br>
 
 #### 📖회원 도메인 실행과 테스트 </br>
-Test 코드를 작성해 실행하면 아래 사진처럼 정상적으로 작동하는 것을 알 수 있다. </br>
-</br>
-<img src="https://github.com/JuheeeKim/spring-tutorial-study/assets/123529128/7bf0ad4d-fd98-4888-808a-733302203330"  width="300" height="180"/> </br>
+Test 코드를 작성해 실행하면 정상적으로 작동하는 것을 알 수 있다. </br>
 
 #### 📖주문과 할인 도메인 설계 </br>
 * 주문과 할인 정책 </br>
@@ -891,6 +889,102 @@ Test 코드를 돌리면 DiscountPolicy의 모든 스프링 빈을 조회할 수
 </br>
 
 ### 📒섹션8 빈 생명주기 콜백</br>
+#### 📖빈 생명주기 콜백 시작 </br>
+**스프링 빈의 이벤트 라이프사이클** </br>
+: 스프링 컨테이너 생성 -> 스프링 빈 생성 -> 의곤관계 주입 -> 초기화 콜백 -> 사용 -> 소멸전 콜백 -> 스프링 종료 </br>
+* 초기화 콜백: 빈이 생성되고, 빈의 의존관계 주입이 완료된 후 호출 </br>
+* 소멸전 콜백: 빈이 소멸되기 직전에 호출 </br>
+
+스프링은 크게 3가지 방법으로 빈 생명주기 콜백을 지원한다. </br>
+
+#### 📖인터페이스 InitializingBean, DisposableBean </br>
+```java
+public class NetworkClient implements InitializingBean, DisposableBean {
+	...
+
+    // 의존관계 끝나면 호출
+    @Override
+    public void afterPropertiesSet() throws Exception {
+		...
+    }
+
+    // 스프링 종료 전 호출
+    @Override
+    public void destroy() throws Exception {
+		...
+    }
+}
+```
+* `InitializingBean`은 `afterPropertiesSet()` 메서드로 초기화 지원하고, `DisposableBean`은 `destory()` 메서드로 소멸을 지원한다. </br>
+* 그러나 이 인터페이스는 스프링 전용 인터페이스로, 해당 코드가 스프링 전용 인터페이스에 의존한다. 그리고 메서드의 이름을 변경할 수 없고, 내가 코드를 고칠 수 없는 외부 라이브러리에 적용할 수 없다. </br>
+* 지금은 거의 사용하지 않는다. </br>
+</br>
+
+#### 📖빈 등록 초기화, 소멸 메서드 지정 </br>
+설정 정보에 초기화, 소멸 메서드를 지정한다. </br>
+```java
+public class NetworkClient {
+
+	...
+
+    // 의존관계 끝나면 호출(Bean에서 init으로 등록)
+    public void init() {
+		...
+    }
+
+    // 스프링 종료 전 호출(Bean에서 destory으로 등록)
+    public void close() {
+		...
+    }
+}
+```
+
+```java
+...
+public class BeanLifeCycleTest {
+
+    @Test
+    public void lifeCycleTest() {
+		...
+    }
+
+    @Configuration
+    static class LifeCycleConfig {
+    	// 설정 정보에 초기화, 소멸 메서드 지정 
+        @Bean(initMethod = "init", destroyMethod = "close")
+        public NetworkClient networkClient() {
+			...
+        }
+    }
+}
+```
+설정 정보를 사용하여 메서드 이름을 자유롭게 줄 수 있고, 스프링 빈이 스프링 코드에 의존하지 않으며, 외부 라이브러리에도 적용할 수 있다. </br>
+</br>
+
+#### 📖어노테이션 @PostConstruct, @PreDestroy </br>
+결론적으로 이 방법을 사용한다. </br>
+```java
+public class NetworkClient {
+
+	...
+
+    // 의존관계 끝나면 호출
+    @PostConstruct
+    public void init() {
+		...
+    }
+
+    // 스프링 종료 전 호출
+    @PreDestroy
+    public void close() {
+		...
+    }
+}
+```
+* `@PostConstruct`, `@PreDestroy` 애노테이션을 사용하면 가장 편리하게 초기화 종료를 실행할 수 있다. </br>
+* 애노테이션만 붙이면 되므로 매우 편리하고, 자바 표준이라 스프링이 아닌 다른 컨테이너에서도 동작하며 컴포넌트 스캔과 잘 어울린다. </br>
+* 코드를 고칠 수 없는 외부 라이브러리를 초기화, 종료해야 하면 @Bean의 `initMethod`, `destoryMethod`를 사용하자. </br>
+</br>
 
 ### 📒섹션9 빈 스코프</br>
 
