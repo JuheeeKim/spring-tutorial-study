@@ -694,6 +694,201 @@ public class AutowiredTest {
 </br>
 
 #### 📖생성자 주입을 선택하라! </br>
+* 수정자 주입(setter)는 public으로 열어둬서 누군가 변경할 수 있다. </br>
+* 대부분의 의존관계 주입은 한 번 일어나면 애플리케이션 종료 시점까지 의존관계를 변경할 일이 없다. </br>
+* 생성자 주입은 객체를 생성할 때 딱 1번 호출되므로 **불변**하게 설계할 수 있다. </br>
+* 또한, 주입 데이터를 누락했을 때 컴파일 오류가 발생한다. (데이터 누락 대처 가능) </br>
+</br>
+
+```java
+@Component
+public class OrderServiceImpl implements OrderService {
+
+	private final MemberRepository memberRepository;
+	private final DiscountPolicy discountPolicy;
+
+	@Autowired
+	... // 생성자 주입
+}
+```
+* final 키워드는 생성자에서 혹시라도 값이 설정되지 않는 오류를 컴파일 시점에 막아준다. </br>
+* 오직 생성자 주입 방식만 `final` 키워드를 사용할 수 있다. </br>
+</br>
+
+#### 📖롬복과 최신 트랜드 </br>
+Lombok 라이브러리가 제공해주는 @RequiredArgsConstructor를 사용해 코드를 간결하게 만들 수 있다. </br>
+```java
+@Component
+@RequiredArgsConstructor // final이 붙은 것을 모아 생성자 자동 생성
+public class OrderServiceImpl implements OrderService{
+
+    private final MemberRepository memberRepository;
+    private final DiscountPolicy discountPolicy;
+
+    // Lombok이 자동으로 생성자를 만들어줘서 필요없음
+//    // 생성자
+//    // @Autowired // 의존 관계 자동 주입, 생성자가 딱 1개만 있으면 생략 가능
+//    public OrderServiceImpl(MemberRepository memberRepository, DiscountPolicy discountPolicy) {
+//        this.memberRepository = memberRepository;
+//        this.discountPolicy = discountPolicy;
+//    }
+```
+</br>
+
+#### 📖조회 빈이 2개 이상 - 문제 </br>
+DiscountPolicy의 하위 타입인 FixDiscountPolicy, RateDiscountPolicy 둘 다 스프링 빈으로 선언하고 조회를 하면 문제가 발생한다. </br>
+```java
+@Component
+public class FixDiscountPolicy implements DiscountPolicy{
+
+@Component
+public class RateDiscountPolicy implements DiscountPolicy{
+```
+둘 다 스프링 빈으로 선언하고 Test를 돌리면 `NoUniqueBeanDefinitionException` 오류가 발생한다. </br>
+</br>
+
+#### 📖@Autowired 필드 명, @Qualifier, @Primary </br>
+**@Autowired 필드 명 매칭** </br>
+여러 빈이 있으면 필드 이름, 파라미터 이름으로 빈 이름을 추가 매칭한다. </br>
+```java
+@Component
+public class OrderServiceImpl implements OrderService{
+
+    private final ...
+    private final ...
+
+    // 생성자
+    @Autowired // 의존 관계 자동 주입, 생성자가 딱 1개만 있으면 생략 가능
+    public OrderServiceImpl(MemberRepository memberRepository, DiscountPolicy rateDiscountPolicy) {
+        ...
+        this.discountPolicy = rateDiscountPolicy;
+    }
+```
+</br>
+
+**@Qualifier 사용** </br>
+* 추가 구분자를 붙여주는 방법이다. </br>
+* 주입시 추가적인 방법을 제공하는 것이지, 빈 이름이 변경되지 않는다. </br>
+```java
+@Component
+@Qualifier("mainDiscountPolicy")
+public class RateDiscountPolicy implements DiscountPolicy{
+
+@Component
+@Qualifier("fixDiscountPolicy")
+public class FixDiscountPolicy implements DiscountPolicy{
+
+@Component
+public class OrderServiceImpl implements OrderService{
+
+    private final ...
+    private final ...
+
+    // 생성자
+    @Autowired // 의존 관계 자동 주입, 생성자가 딱 1개만 있으면 생략 가능
+    public OrderServiceImpl(MemberRepository memberRepository, @Qualifier("mainDiscountPolicy") DiscountPolicy discountPolicy) {
+		...
+    }
+```
+</br>
+
+만약 수정자 자동 주입일 경우 다음과 같이 수정한다. </br>
+```java
+@Autowired
+public DiscountPolicy setDiscountPolicy(@Qualifier("mainDiscountPolicy")
+DiscountPolicy discountPolicy) {
+	...
+}
+```
+</br>
+
+**@Primary 사용** </br>
+우선순위를 정한다. 의존관계 주입시 `@Primary`가 우선권을 가진다. </br>
+```java
+@Component
+@Primary
+public class RateDiscountPolicy implements DiscountPolicy{
+
+@Component
+public class FixDiscountPolicy implements DiscountPolicy{
+
+@Component
+public class OrderServiceImpl implements OrderService{
+
+    private final ...
+    private final ...
+
+    // 생성자
+    @Autowired // 의존 관계 자동 주입, 생성자가 딱 1개만 있으면 생략 가능
+    public OrderServiceImpl(MemberRepository memberRepository, DiscountPolicy discountPolicy) {
+		...
+    }
+```
+</br>
+
+#### 📖어노테이션 직접 만들기 </br>
+`@Qualifier("mainDiscountPolicy")` 이렇게 문자를 적으면 컴파일시 문자에 대한 타입 체크가 안 된다. 다음과 같은 어노테이션을 만들어서 문제를 해결할 수 있다. </br>
+```java
+@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER,
+        ElementType.TYPE, ElementType.ANNOTATION_TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Qualifier("mainDiscountPolicy")
+public @interface MainDiscountPolicy {
+    
+}
+```
+
+```java
+@Component
+@MainDiscountPolicy
+public class RateDiscountPolicy implements DiscountPolicy{
+
+@Component
+public class OrderServiceImpl implements OrderService{
+
+    private final ...
+    private final ...
+
+    // 생성자
+    @Autowired // 의존 관계 자동 주입, 생성자가 딱 1개만 있으면 생략 가능
+    public OrderServiceImpl(MemberRepository memberRepository, @MainDiscountPolicy DiscountPolicy discountPolicy) {
+		...
+    }
+```
+</br>
+
+#### 📖조회한 빈이 모두 필요할 때, List, Map </br>
+```java
+public class AllBeanTest {
+
+    @Test
+    void findAllBean() {
+        ApplicationContext ac = new AnnotationConfigApplicationContext(AutoAppConfig.class,DiscountService.class);
+    }
+
+    static class DiscountService {
+        private final Map<String, DiscountPolicy> policyMap;
+        private final List<DiscountPolicy> policies;
+
+        // 생성자
+        @Autowired
+        public DiscountService(Map<String, DiscountPolicy> policyMap, List<DiscountPolicy> policies) {
+			...
+        }
+    }
+}
+
+```
+Test 코드를 돌리면 DiscountPolicy의 모든 스프링 빈을 조회할 수 있다. </br>
+* `Map<String, DiscountPolicy>`: 생성자를 통해 Map의 키에 스프링 빈의 이름을 넣어주고, 그 값으로 DiscountPolicy 타입으로 조회한 모든 스프링 빈을 담아준다. </br>
+* `List<DiscountPolicy>`: 생성자를 통해 Discountpolicy 타입으로 조회한 모든 스프링 빈을 담아준다. </br>
+</br>
+
+#### 📖자동, 수동의 올바른 실무 운영 기준 </br>
+* 컴포넌트 스캔을 기본으로 사용하고, 스프링 빈들도 조건이 맞으면 **자동**으로 등록하는 것을 권장한다. </br>
+* 그러나 다형성을 적극 활용하는 비지니스 로직이나 애플리케이션에 광범위하게 영향을 미치는 기술 지원 객체는 수동 빈으로 등록해, 설정 정보에 명확하게 드러내는 것이 유지보수에 좋다. </br>
+</br>
 
 ### 📒섹션8 빈 생명주기 콜백</br>
 
