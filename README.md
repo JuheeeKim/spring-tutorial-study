@@ -577,7 +577,123 @@ public class AutoAppConfig {
 * 스프링 부트 에러: `Consider renaming one of the beans or enabling overriding by setting spring.main.allow-bean-definition-overriding=true`
 </br>
 
-### 📒섹션7 의존관계 자동 주입</br>
+### 📒섹션7 의존관계 자동 주입 </br>
+#### 📖다양한 의존관계 주입 방법 </br>
+**생성자 주입** </br>
+```java
+@Component
+public class OrderServiceImpl implements OrderService{
+
+    private final ...
+    private final ...
+
+    // 생성자
+    @Autowired // 의존 관계 자동 주입
+    public OrderServiceImpl(MemberRepository memberRepository, DiscountPolicy discountPolicy) {
+		...
+    }
+}
+```
+* 생성자를 통해 의존 관계를 주입 받는 방법, 생성자 호출시점에 딱 1번만 호출되는 것이 보장된다. </br>
+* 생성자로 주입된 것은 수정하면 안 되고, 값이 없으면 안 된다. </br>
+* 생성자가 딱 1개만 있으면 @Autowired를 생략해도 자동 주입 된다. </br>
+</br>
+
+**수정자 주입(setter 주입)** </br>
+```java
+@Component
+public class OrderServiceImpl implements OrderService{
+
+    // 수정자를 사용하기 위해서 final을 없애야 한다.
+    private ...
+    private ...
+
+    @Autowired
+    public void setMemberRepository(MemberRepository memberRepository) {
+        ...
+    }
+
+    @Autowired
+    public void setDiscountPolicy(DiscountPolicy discountPolicy) {
+        ...
+    }
+}
+```
+* setter라는 수정 메서드를 통해 의존 관계를 주입한다. </br>
+* 선택, 변경 가능성이 있을 때 사용한다. </br>
+* @Autowired(required = false) 를 통해 선택적으로 주입 가능하다. </br>
+</br>
+
+**필드 주입** </br>
+```java
+@Component
+public class OrderServiceImpl implements OrderService{
+
+    @Autowired private ...
+    @Autowired private ...
+
+    ...
+}
+```
+* 필드에 바로 주입하는 방법이다. </br>
+* 코드는 간결하지만, 외부에서 변경이 불가능해 테스트하기 힘들다는 단점이 있다. </br>
+* 사용하지 말자! (애플리케이션의 실제 코드와 관계 없는 테스트 코드에서는 사용 가능) </br>
+</br>
+
+**일반 메서드 주입** </br>
+```java
+@Component
+public class OrderServiceImpl implements OrderService {
+	private ...
+	private ...
+    
+	@Autowired
+	public void init(MemberRepository memberRepository,DiscountPolicy discountPolicy) {
+		...
+	}
+}
+```
+* 일반적으로 잘 사용하지 않는다. </br>
+</br>
+
+#### 📖옵션 처리 </br>
+주입할 스프링 빈이 없어도 동작해야 할 때, 자동 주입 대상을 옵션으로 처리해야 한다. </br>
+```java
+public class AutowiredTest {
+
+    @Test
+    void AutowiredOption() {
+        ...
+    }
+
+    static class TestBean {
+
+        // 호출 안됨
+        @Autowired(required = false)
+        public void setNoBean1(Member noBean1) {
+            System.out.println("noBean1 = " + noBean1);
+        }
+
+        // null 호출
+        @Autowired
+        public void setNoBean2(@Nullable Member noBean2) {
+            System.out.println("noBean2 = " + noBean2);
+        }
+
+        // Optional.empty 호출
+        @Autowired
+        public void setNoBean3(Optional<Member> noBean3) {
+            System.out.println("noBean3 = " + noBean3);
+        }
+    }
+}
+```
+* `@Autowired(required=false)`: 자동 주입할 대상이 없으면, 수정자 메서드 자체가 호출되지 않는다. </br>
+* `@Nullable`: 자동 주입할 대상이 없으면 `null`이 입력된다. </br>
+* `Optional<>`: 자동 주입할 대상이 없으면 `Optional.empty`가 입력된다. </br>
+</br>
+
+#### 📖생성자 주입을 선택하라! </br>
 
 ### 📒섹션8 빈 생명주기 콜백</br>
 
