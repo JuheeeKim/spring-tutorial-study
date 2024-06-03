@@ -1117,8 +1117,136 @@ static class ClientBean {
 ```
 * `provider.get()`을 통해 항상 새로운 프로토타입 빈이 생성된다. </br>
 * `provider`의 `get()`을 호출하면 내부에서는 스프링 컨테이너를 통해 해당 빈을 찾아서 반환한다.(**DL**) </br>
+</br>
 
+#### 📖웹 스코프 </br>
+* 웹 스코프는 웹 환경에서만 동작한다. </br>
+* 스프링이 해당 스코프의 종료시점까지 관리하여, 종료 메서드가 호출된다. </br>
+* 웹 스코프 종류에는 request, session, application, websocket이 있다. </br>
+</br>
 
+#### 📖request 스코프 예제 만들기 </br>
+* 동시에 여러 HTTP 요청이 오면 정확히 어떤 요청이 남긴 로그인지 구분이 어렵다. </br>
+* 이럴때 사용하기 딱 좋은 것이 바로 request 스코프이다. </br>
+```java
+@Component
+@Scope(value = "request")
+public class MyLogger {
 
+    private String uuid;
+    private String requestURL;
+
+    // requestURL setter
+    ...
+
+    public void log(String message) {
+        ...
+    }
+
+    @PostConstruct
+    public void init() {
+        uuid = UUID.randomUUID().toString();
+        ...
+    }
+
+    @PreDestroy
+    public void close() {
+        ...
+    }
+}
+```
+@Scope(value = "request")를 사용해서 request 스코프로 지정했다. HTTP 요청 당 하나씩 생성되고, HTTP 요청이 끝나는 시점에 소멸된다. </br>
+</br>
+
+```java
+@Controller
+@RequiredArgsConstructor // 생성자 자동 주입
+public class LogDemoController {
+
+    private final LogDemoService logDemoService;
+    private final MyLogger myLogger;
+
+    @RequestMapping("log-demo") // log-demo 페이지에 접근
+    @ResponseBody // 화면 없이 응답 데이터만 받을 수 있음
+    public String logDemo(HttpServletRequest request) { // HttpServletRequest: 고객요청 정보 받을 수 있음
+        String requestURL = request.getRequestURL().toString();
+        myLogger.setRequestURL(requestURL);
+
+        ...
+    }
+}
+```
+HttpServletRequest를 통해 요청 URL을 받는다. </br>
+</br>
+
+```java
+@Service
+@RequiredArgsConstructor
+public class LogDemoService {
+    
+    private final MyLogger myLogger;
+    
+    public void logic(String id) {
+        ...
+    }
+}
+```
+하지만 작성한 코드들을 실행해보면 에러가 발생한다. 스프링이 실행될 때에는 request 요청이 없기 때문이다. </br>
+
+#### 📖스코프와 Provider </br>
+위의 문제를 해결하기 위해 Provider를 사용한다. </br>
+```java
+@Controller
+@RequiredArgsConstructor // 생성자 자동 주입
+public class LogDemoController {
+
+    private final LogDemoService logDemoService;
+    private final ObjectProvider<MyLogger> myLoggerProvider; // 주입이 아니라 Look up
+
+    @RequestMapping("log-demo") // log-demo 페이지에 접근
+    @ResponseBody // 화면 없이 응답 데이터만 받을 수 있음
+    public String logDemo(HttpServletRequest request) { // HttpServletRequest: 고객요청 정보 받을 수 있음
+        ...
+        MyLogger myLogger = myLoggerProvider.getObject(); // 여기서 꺼냄
+        ...
+    }
+}
+```
+
+```java
+@Service
+@RequiredArgsConstructor
+public class LogDemoService {
+
+    private final ObjectProvider<MyLogger> myLoggerProvider;
+
+    public void logic(String id) {
+        MyLogger myLogger = myLoggerProvider.getObject();
+        ...
+    }
+}
+```
+* 위와 같이 수정하고, 웹 브라우저에 `http://localhost:8080/log-demo`를 입력하면 log가 잘 찍히는 것을 확인 할 수 있다. </br>
+* 요청을 한 번 더 하면 다른 uuid를 가진 것을 확인할 수 있다. </br>
+* `ObjectProvider` 덕분에 `ObjectProvider.getObject()`를 호출하는 시점까지 request scope 빈의 생성을 지연할 수 있다. </br>
+</br>
+
+#### 📖스코프와 프록시 </br>
+MyLogger의 가짜 프록시 클래스를 만들어두고, HTTP request와 상관없이 가짜 프록시 클래스를 다른 빈에 미리 주입해 둘 수 있다. </br>
+```java
+@Component
+@Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
+public class MyLogger {
+	...
+}
+```
+</br>
+
+**웹 스코프와 프록시 동작 원리**
+* CGLIB라는 바이트코드를 조작하는 라이브러리를 사용해서, MyLogger를 상속받는 가짜 프록시 객체를 생성한다. </br>
+* 스프링 컨테이너에 진짜 대신에 **가짜 프록시 객체를 등록**한다. </br>
+* 그래서 의존관계 주입도 이 가짜 프록시 객체가 주입된다. </br>
+* 가짜 프록시 객체는 실제 요청이 오면 그때 내부에서 실제 빈을 요청하는 위임 로직이 들어 있다. </br>
+</br>
 
 #### 인프런 - "스프링 입문 - 스프링 핵심 원리 - 기본편" 강의를 참고하여 공부한 내용을 바탕으로 작성하였습니다.
