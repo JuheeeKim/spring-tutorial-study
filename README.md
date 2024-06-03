@@ -1036,6 +1036,89 @@ public class PrototypeTest {
 </br>
 
 #### 📖프로토타입 스코프 - 싱글톤 빈과 함께 사용시 문제점 </br>
+**싱글톤 빈에서 프로토타입 빈 사용** </br>
+```java
+public class SingletonWithPrototypeTest1 {
+
+    @Test
+    void singletonClientUsePrototype() {
+        AnnotationConfigApplicationContext ac =
+                new AnnotationConfigApplicationContext(ClientBean.class, PrototypeBean.class);
+
+        ClientBean clientBean1 = ac.getBean(ClientBean.class);
+        int count1 = clientBean1.logic();
+        Assertions.assertThat(count1).isEqualTo(1);
+
+        ...
+        Assertions.assertThat(count2).isEqualTo(2);
+    }
+
+    @Scope("singleton")
+    static class ClientBean {
+        private final PrototypeBean prototypeBean; // 생성시점에 주입
+
+        @Autowired // 의존관계 주입
+        public ClientBean(PrototypeBean prototypeBean) {
+            ...
+        }
+
+        public int logic() {
+            prototypeBean.addCount();
+            int count = prototypeBean.getCount();
+            ...
+        }
+    }
+
+    @Scope("prototype")
+    static class PrototypeBean {
+
+        ...
+    }
+}
+```
+싱글톤 빈은 생성시점에만 의존관계 주입을 받기 때문에, 프로토타입 빈이 새로 생성되지만, 싱글톤 빈과 함께 계속 유지되는 것이 문제다. </br>
+</br>
+
+#### 📖프로토타입 스코프 - 싱글톤 빈과 함께 사용시 Provider로 문제 해결 </br>
+**ObjectFactory, ObjectProvider** </br>
+```java
+static class ClientBean {
+
+    @Autowired
+    private ObjectProvider<PrototypeBean> prototypeBeanProvider;
+
+    public int logic() {
+        PrototypeBean prototypeBean = prototypeBeanProvider.getObject();
+        ...
+    }
+}
+```
+* 지정한 빈을 컨테이너에서 대신 찾아주는 DL 기능을 제공한다. </br>
+* 실행해보면 `prototypeBeanProvider.getObject()`을 통해서 항상 새로운 프로토타입 빈이 생성된다. </br>
+</br>
+
+**JSR-330 Provider** </br>
+```java
+dependencies {
+	...	    
+	jakarta.inject:jakarta.inject-api:2.0.1
+	...
+}
+static class ClientBean {
+
+    @Autowired
+    private Provider<PrototypeBean> prototypeBeanProvider;
+
+    public int logic() {
+        PrototypeBean prototypeBean = prototypeBeanProvider.get();
+        ...
+    }
+}
+```
+* `provider.get()`을 통해 항상 새로운 프로토타입 빈이 생성된다. </br>
+* `provider`의 `get()`을 호출하면 내부에서는 스프링 컨테이너를 통해 해당 빈을 찾아서 반환한다.(**DL**) </br>
+
+
 
 
 #### 인프런 - "스프링 입문 - 스프링 핵심 원리 - 기본편" 강의를 참고하여 공부한 내용을 바탕으로 작성하였습니다.
