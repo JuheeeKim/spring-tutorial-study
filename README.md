@@ -1195,6 +1195,7 @@ public class LogDemoService {
 }
 ```
 하지만 작성한 코드들을 실행해보면 에러가 발생한다. 스프링이 실행될 때에는 request 요청이 없기 때문이다. </br>
+</br>
 
 #### 📖스코프와 Provider </br>
 위의 문제를 해결하기 위해 Provider를 사용한다. </br>
